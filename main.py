@@ -92,7 +92,7 @@ for _, row in mapping_df.iterrows():
         dbconfig
     )
 
-    line_results, lm, lmis = compare_lineitems(
+    line_results, lm, lmis, group_summary = compare_lineitems(
         before_lines,
         after_lines
     )
@@ -128,44 +128,47 @@ for _, row in mapping_df.iterrows():
         })
 
     # =========================
-    # HEADER SUMMARY
+    # TOTALS
     # =========================
 
-    header_total = hm + hmis
-
-    header_accuracy = (
-        (hm / header_total) * 100
-        if header_total > 0
-        else 0
-    )
-
-    # =========================
-    # LINE ITEM SUMMARY
-    # =========================
-
-    line_total = lm + lmis
-
-    line_accuracy = (
-        (lm / line_total) * 100
-        if line_total > 0
-        else 0
-    )
-
-    # =========================
-    # OVERALL SUMMARY
-    # =========================
+    total_header_topics = hm + hmis
 
     total_match = hm + lm
 
     total_mismatch = hmis + lmis
 
-    total = total_match + total_mismatch
+    # =========================
+    # ACCURACY
+    # =========================
 
-    overall_accuracy = (
-        (total_match / total) * 100
-        if total > 0
+    accuracy = (
+        (
+            total_match /
+            (
+                total_match +
+                total_mismatch
+            )
+        ) * 100
+        if (
+            total_match +
+            total_mismatch
+        ) > 0
         else 0
     )
+
+    # =========================
+    # GROUP PASS / FAIL
+    # =========================
+
+    group_pass = 0
+    group_fail = 0
+
+    for group in group_summary:
+
+        if group["status"] == "PASS":
+            group_pass += 1
+        else:
+            group_fail += 1
 
     # =========================
     # STORE SUMMARY
@@ -177,24 +180,18 @@ for _, row in mapping_df.iterrows():
         "after_doc_id": after_doc_id,
 
         # HEADER
-        "header_match": hm,
-        "header_mismatch": hmis,
-        "header_accuracy": round(
-            header_accuracy, 2
-        ),
+        "total_header_topics": total_header_topics,
+        "header_pass": hm,
+        "header_fail": hmis,
 
         # LINE ITEM
-        "line_match": lm,
-        "line_mismatch": lmis,
-        "line_accuracy": round(
-            line_accuracy, 2
-        ),
+        "total_lineitem_groups": len(group_summary),
+        "lineitem_groups_pass": group_pass,
+        "lineitem_groups_fail": group_fail,
 
-        # OVERALL
-        "total_match": total_match,
-        "total_mismatch": total_mismatch,
-        "overall_accuracy": round(
-            overall_accuracy, 2
+        # ACCURACY
+        "accuracy": round(
+            accuracy, 2
         )
 
     })
@@ -216,4 +213,4 @@ print(
     "✅ Report Generated"
 )
 
-#python main.py
+# python main.py

@@ -3,27 +3,29 @@ from utils.normalizer import normalize
 # FIXED HEADER ORDER
 HEADER_TOPICS = [
 
-    "InvoiceHeader",
-    "SupplierName",
-    "SupplierAddress",
-    "SupplierTaxNumber",
-    "BuyerName",
-    "BuyerAddress",
-    "BuyerTaxNumber",
-    "InvoiceNumber",
     "InvoiceIssueDate",
-    "InvoiceDueDate",
-    "PurchaseOrderNumber",
-    "EWayBillNumber",
-    "TotalAmountBeforeTax",
-    "TotalTax",
-    "TotalAmountAfterTax",
-    "GRNSeal",
-    "IRNSticker",
-    "IRNStickerWHDocumentID",
+
+    "BuyerAddress",
+
+    "BuyerName",
+
+    "InvoiceNumber",
+
+    "SupplierAddress",
+
     "IRNStickerInvoiceQty",
-    "AuthorisedSignature",
-    "HSNCodePresence"
+
+    "SupplierTaxNumber",
+
+    "TotalAmountBeforeTax",
+
+    "TotalTax",
+
+    "SupplierName",
+
+    "PurchaseOrderNumber",
+
+    "TotalAmountAfterTax"
 
 ]
 
@@ -38,15 +40,35 @@ def compare_headers(before_data, after_data):
     # SERIAL ORDER
     for topic in HEADER_TOPICS:
 
-        before_value = normalize(
+        # =========================
+        # ORIGINAL VALUES
+        # =========================
+
+        before_value = str(
             before_data.get(topic, "")
         )
 
-        after_value = normalize(
+        after_value = str(
             after_data.get(topic, "")
         )
 
-        if before_value == after_value:
+        # =========================
+        # NORMALIZED VALUES
+        # =========================
+
+        normalized_before = normalize(
+            before_value
+        )
+
+        normalized_after = normalize(
+            after_value
+        )
+
+        # =========================
+        # COMPARE NORMALIZED VALUES
+        # =========================
+
+        if normalized_before == normalized_after:
 
             status = "MATCH"
             matched += 1
@@ -55,6 +77,10 @@ def compare_headers(before_data, after_data):
 
             status = "MISMATCH"
             mismatched += 1
+
+        # =========================
+        # STORE ORIGINAL VALUES
+        # =========================
 
         results.append({
 

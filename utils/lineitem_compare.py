@@ -35,6 +35,9 @@ def compare_lineitems(
     matched = 0
     mismatched = 0
 
+    # GROUP SUMMARY
+    group_summary = []
+
     max_groups = max(
         len(before_lines),
         len(after_lines)
@@ -58,6 +61,10 @@ def compare_lineitems(
             f"Line Item Group {index + 1}"
         )
 
+        # GROUP COUNTS
+        group_match = 0
+        group_mismatch = 0
+
         # GROUP HEADER
         results.append({
 
@@ -72,24 +79,53 @@ def compare_lineitems(
         # SERIAL ORDER
         for topic in LINEITEM_TOPICS:
 
-            before_value = normalize(
+            # =========================
+            # ORIGINAL VALUES
+            # =========================
+
+            before_value = str(
                 before_group.get(topic, "")
             )
 
-            after_value = normalize(
+            after_value = str(
                 after_group.get(topic, "")
             )
 
+            # =========================
+            # NORMALIZED VALUES
+            # =========================
+
+            normalized_before = normalize(
+                before_value
+            )
+
+            normalized_after = normalize(
+                after_value
+            )
+
+            # =========================
+            # COMPARE NORMALIZED VALUES
+            # =========================
+
             status = (
                 "MATCH"
-                if before_value == after_value
+                if normalized_before == normalized_after
                 else "MISMATCH"
             )
 
             if status == "MATCH":
+
                 matched += 1
+                group_match += 1
+
             else:
+
                 mismatched += 1
+                group_mismatch += 1
+
+            # =========================
+            # STORE ORIGINAL VALUES
+            # =========================
 
             results.append({
 
@@ -101,4 +137,30 @@ def compare_lineitems(
 
             })
 
-    return results, matched, mismatched
+        # =========================
+        # GROUP STATUS
+        # =========================
+
+        group_status = (
+            "PASS"
+            if group_mismatch == 0
+            else "FAIL"
+        )
+
+        # =========================
+        # STORE GROUP SUMMARY
+        # =========================
+
+        group_summary.append({
+
+            "group_name": group_name,
+            "status": group_status
+
+        })
+
+    return (
+        results,
+        matched,
+        mismatched,
+        group_summary
+    )
